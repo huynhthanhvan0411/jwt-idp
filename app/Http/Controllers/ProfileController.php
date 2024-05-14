@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\ProfileRequest;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpKernel\Profiler\Profile;
+use Illuminate\Http\Response;
 
 class ProfileController extends Controller
 {
@@ -23,12 +23,12 @@ class ProfileController extends Controller
             $users = User::all();
             return response()->json([
                 'success' => true,
-                'users' => $users],200);
+                'users' => $users],Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()],500);
+                'message' => $e->getMessage()],Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         // dd($users);
     }
@@ -61,13 +61,13 @@ class ProfileController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => 'User created successfully',201]);
+                'message' => 'User created successfully',Response::HTTP_CREATED]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()],500);
+                'message' => $e->getMessage()],Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -83,13 +83,13 @@ class ProfileController extends Controller
         try {
             return response()->json([
                 'success' => true,
-                'user' => $user],200);
+                'user' => $user],Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
                 'success' => false, 
                 'message' => $e->getMessage()
-            ],500);
+            ],Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -124,14 +124,14 @@ class ProfileController extends Controller
         DB::commit();
         return response()->json([
             'success' => true,
-            'message' => 'User updated successfully',201]);
+            'message' => 'User updated successfully',Response::HTTP_OK]);
      } catch (\Exception $e) {
          DB::rollBack();
          Log::error($e->getMessage());
          return response()->json([
              'success' => false,
              'message' => $e->getMessage()
-         ],500);
+         ],Response::HTTP_INTERNAL_SERVER_ERROR);
      }
 
     }
@@ -151,13 +151,13 @@ class ProfileController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => 'User deleted successfully',201]);
+                'message' => 'User deleted successfully',Response::HTTP_OK]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()],500);
+                'message' => $e->getMessage()],Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -12,6 +12,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AuthRequest;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use PhpParser\Node\Stmt\TryCatch;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller
 {
@@ -24,29 +28,40 @@ class AuthController extends Controller
     {
         $this->middleware('auth:api', ['except' => ['login', 'refresh', 'register']]);
     }
-    // public function register(ProfileRequest $request){
-    //     DB::beginTransaction();
-    //     try {
-    //         $users = new User();
-    //         $users->name = $request->name;
-    //         $users->email = $request->email;
-    //         $users->password = Hash::make($request->password);
-    //         DB::commit();
-    //         $users->save();
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'User created successfully',
-    //             'user' => $users
-    //         ], 201);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         Log::error($e->getMessage());
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+ 
+    public function register(AuthRequest $request)
+    {
+        if(User::where('email', $request->email)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email already exists'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+        DB::beginTransaction();
+        try {
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = Hash::make($request->password);
+
+            $user->save();
+            event(new Registered($user));
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully',
+                'user' => $user
+            ], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+    }
 
     /**
      * Get a JWT via given credentials.
@@ -56,11 +71,9 @@ class AuthController extends Controller
     public function login()
     {
         $credentials = request(['email', 'password']);
-
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
         return $this->respondWithToken($token);
     }
 
@@ -83,7 +96,7 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json(['message' => 'Successfully logged out'],Response::HTTP_OK);
     }
 
     /**
@@ -112,32 +125,8 @@ class AuthController extends Controller
             'user' => auth()->user()
         ]);
     }
-    public function register(AuthRequest $request){
-
-        DB::beginTransaction();
-        try{
-            $users = new User();
-            $users->name = $request->name;
-            $users->email = $request->email;
-            $users->password = Hash::make($request->password);
-            dd($users);
-            $users->save();
-            // event(new Registered($users));
-            // $token = auth('api')->login($users);
-            DB::commit();
-            return response()->json(
-            [
-                    'success' => true,
-                    'message' => 'User created successfully',
-                    'user' => $users
-                ],201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error($e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
+   
+    public function checkEmail(){}
+    public function resetPassword(){}
+    public function forgotPassword(){}
 }
