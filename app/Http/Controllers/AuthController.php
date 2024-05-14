@@ -126,7 +126,22 @@ class AuthController extends Controller
         ]);
     }
    
-    public function checkEmail(){}
-    public function resetPassword(){}
+    public function checkEmail(){
+        try {
+            if(User::where('email', request('email'))->exists()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Email already exists'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+            return response()->json(['success' => false], Response::HTTP_OK);
+        }catch(\Exception $e){
+            Log::error($e->getMessage());
+            return response()->json(['success' => false,'message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function resetPassword(){
+        
+    }
     public function forgotPassword(){}
 }

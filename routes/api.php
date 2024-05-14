@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
-// use Illuminate\Auth\Events\EmailVerificationRequest;
+use App\Http\Controllers\EmailController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest; 
 /*
 |--------------------------------------------------------------------------
@@ -35,13 +35,18 @@ Route::group(['middleware' => 'api', 'prefix' => 'profile'], function () {
     Route::delete('/delete-profile/{id}', [ProfileController::class, 'destroy']);
 });
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect('/home');
-})->middleware(['auth', 'signed'])->name('verification.verify');
+// Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+//     $request->fulfill();
+//     return redirect('/home');
+// })->middleware(['auth', 'signed'])->name('verification.verify');
 
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
+// Route::post('/email/verification-notification', function (Request $request) {
+//     $request->user()->sendEmailVerificationNotification();
 
-    return back()->with('message', 'Verification link sent!');
+//     return back()->with('message', 'Verification link sent!');
+// });
+
+Route::prefix('email')->group(function () {
+    Route::get('/verify/{id}/{hash}', [EmailController::class, 'checkVerifyEmail'])->middleware(['auth', 'signed'])->name('verification.verify');
+    Route::get('/verification-notification', [EmailController::class, 'sendVerificationEmail'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 });

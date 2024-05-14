@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Response;
 class EmailController extends Controller
 {
-    //
-    
+    //check mail exist and verified
     public function checkVerifyEmail (EmailVerificationRequest $request){
         DB::beginTransaction();
         try {
@@ -28,6 +27,7 @@ class EmailController extends Controller
             return response()->json(['message' => 'Email not verified'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    // send mail for email verification
     public function sendVerificationEmail(Request $request)
     {
         try {
@@ -37,7 +37,7 @@ class EmailController extends Controller
 
             $request->user()->sendEmailVerificationNotification();
 
-            return response()->json(['message' => __('Email verification link sent on your email id.')]);
+            return response()->json(['message' => __('Email verification link sent on your email id.')], Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
 
