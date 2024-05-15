@@ -25,8 +25,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
 
     Route::post('register', [AuthController::class, 'register']);
-    Route::post('reset-password', [AuthController::class, 'updatePassword']);
-    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('forgot-password', [AuthController::class, 'createResetPasswordToken']);
 });
 Route::group(['middleware' => 'api', 'prefix' => 'profile'], function () {
     Route::get('', [ProfileController::class, 'index']);
@@ -35,16 +35,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'profile'], function () {
     Route::delete('/delete-profile/{id}', [ProfileController::class, 'destroy']);
 });
 
-// Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-//     $request->fulfill();
-//     return redirect('/home');
-// })->middleware(['auth', 'signed'])->name('verification.verify');
-
-// Route::post('/email/verification-notification', function (Request $request) {
-//     $request->user()->sendEmailVerificationNotification();
-
-//     return back()->with('message', 'Verification link sent!');
-// });
 
 Route::prefix('email')->group(function () {
     Route::get('/verify/{id}/{hash}', [EmailController::class, 'checkVerifyEmail'])->middleware(['auth', 'signed'])->name('verification.verify');
